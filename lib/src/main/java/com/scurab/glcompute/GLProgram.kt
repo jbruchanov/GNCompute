@@ -35,13 +35,18 @@ abstract class BaseGLProgram<I, O> : GLProgram<I, O> {
 
     private fun requireRef() = requireNotNull(ref) { "$this is not loaded" }
 
+    var measured: Long = 0; private set
+
     suspend fun load(glCompute: GLCompute) {
         require(ref == null) { "Already loaded" }
         ref = glCompute.loadProgram(this)
     }
 
     final override suspend fun execute(args: I): O = withContext(computeScope.coroutineContext) {
-        onExecute(args)
+        val start = System.nanoTime()
+        val r = onExecute(args)
+        measured = System.nanoTime() - start
+        r
     }
 
     abstract suspend fun onExecute(args: I): O

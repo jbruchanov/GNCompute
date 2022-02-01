@@ -47,14 +47,16 @@ class SamplePowProgram(private val sampleDataSize: Int = 4096) : BaseGLProgram<F
         //create 2 buffers
         GLES31.glGenBuffers(2, iArray, 0)
 
+        val measures = mutableListOf<Long>()
+
         //use program
-        val (_, m0) = measure {
+        measure(measures) {
             GLES31.glUseProgram(programRef)
             requireNoGlError()
         }
 
         //load data into SSBO
-        val (bufferData, m1) = measure {
+        val (bufferData) = measure(measures) {
             val bufferData = iArray[0]
             GLES31.glBindBuffer(GLES31.GL_SHADER_STORAGE_BUFFER, bufferData)
             GLES31.glBufferData(GLES31.GL_SHADER_STORAGE_BUFFER, input.capacity(), input, GLES31.GL_STATIC_DRAW)
@@ -64,7 +66,7 @@ class SamplePowProgram(private val sampleDataSize: Int = 4096) : BaseGLProgram<F
         }
 
         //allocate data out
-        val (expLocation, m2) = measure {
+        val (expLocation) = measure(measures) {
             val expLocation = GLES31.glGetUniformLocation(programRef, "exponent").requireNotZero("Missing 'exponent' uniform in kernel")
             GLES31.glUniform1f(expLocation, args)
             requireNoGlError()
@@ -72,14 +74,14 @@ class SamplePowProgram(private val sampleDataSize: Int = 4096) : BaseGLProgram<F
         }
 
         //run it
-        val (_, m3) = measure {
+        measure(measures) {
             GLES31.glDispatchCompute(groupX, 1, 1)
             GLES31.glMemoryBarrier(GLES31.GL_SHADER_STORAGE_BARRIER_BIT)
             requireNoGlError()
         }
 
         //get data back
-        val (result, m4) = measure {
+        val (result) = measure(measures) {
             GLES31.glBindBuffer(GLES31.GL_SHADER_STORAGE_BUFFER, bufferData)
             val buff = (GLES31.glMapBufferRange(GLES31.GL_SHADER_STORAGE_BUFFER, 0, memSampleDataSize, GLES31.GL_MAP_READ_BIT) as? ByteBuffer).requireNotNull()
             val result = buff.copyToFloatArray()
@@ -87,29 +89,12 @@ class SamplePowProgram(private val sampleDataSize: Int = 4096) : BaseGLProgram<F
             result
         }
 
-        measure {
+        measure(measures) {
             //release
             GLES31.glDeleteBuffers(1, iArray, 0)
         }
 
-        val blockSize = 256
-        if (result.size < 32) {
-            Log.d(TAG, "Data:${result.joinToString()}")
-        } else {
-            (0 until (result.size / blockSize).coerceAtLeast(1)).forEach { i ->
-                val log = result
-                    .drop(i * blockSize)
-                    .take(blockSize)
-                    .windowed(32, 32)
-                    .joinToString("\n") { it.joinToString() }
-
-                Log.d(
-                    TAG, "Data[${i * blockSize} -> ${(i + 1) * blockSize}]:\n$log"
-                )
-            }
-        }
-        val times = arrayOf(m0, m1, m2, m3, m4)
-        Log.d(TAG, "Steps(groupSize=${groupSize}, Times=[${times.joinToString()}] => ${times.sum()} [us]\nconfig:$config")
+        Log.d(TAG, "Steps(groupSize=${groupSize}, Times=[${measures.joinToString()}] => ${measures.sum()} [us]\nconfig:$config")
         return result
     }
 }

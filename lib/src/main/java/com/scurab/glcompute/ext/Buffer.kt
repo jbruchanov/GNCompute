@@ -12,6 +12,6 @@ fun ByteBuffer.copyToFloatArray(order: ByteOrder = ByteOrder.nativeOrder()) = Fl
     .array()
 
 fun ByteBuffer.copyToIntArray(order: ByteOrder = ByteOrder.nativeOrder()) = IntBuffer
-    .allocate(capacity() / Float.SIZE_BYTES)
+    .allocate(capacity() / Int.SIZE_BYTES)
     .put(order(order).asIntBuffer())
     .array()
