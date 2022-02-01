@@ -2,13 +2,24 @@ package com.scurab.glcompute
 
 import android.app.ActivityManager
 import android.content.Context
+import android.opengl.GLES10.glGetIntegerv
 import android.opengl.GLES20
 import android.opengl.GLES20.GL_NONE
 import android.opengl.GLES20.glAttachShader
 import android.opengl.GLES20.glLinkProgram
 import android.opengl.GLES30
+import android.opengl.GLES30.glGetIntegeri_v
 import android.opengl.GLES31
 import android.opengl.GLES31.GL_COMPUTE_SHADER
+import android.opengl.GLES31.GL_MAX_ATOMIC_COUNTER_BUFFER_SIZE
+import android.opengl.GLES31.GL_MAX_COMPUTE_ATOMIC_COUNTERS
+import android.opengl.GLES31.GL_MAX_COMPUTE_ATOMIC_COUNTER_BUFFERS
+import android.opengl.GLES31.GL_MAX_COMPUTE_WORK_GROUP_COUNT
+import android.opengl.GLES31.GL_MAX_COMPUTE_WORK_GROUP_INVOCATIONS
+import android.opengl.GLES31.GL_MAX_COMPUTE_WORK_GROUP_SIZE
+import com.scurab.glcompute.ext.toVec3
+import com.scurab.glcompute.model.AtomicCounters
+import com.scurab.glcompute.model.ComputeConfig
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
@@ -25,14 +36,18 @@ class GLCompute(private val dispatcher: CoroutineDispatcher = defaultDispatcher)
     private var egl10: EGL10 = (EGLContext.getEGL() as EGL10)
     private var eglContext: EGLContext? = null
     private var eglDisplay: EGLDisplay? = null
-    private val isStarted = false
+    private var isStarted = false
 
     private val rootJob = Job()
     override val coroutineContext: CoroutineContext get() = dispatcher + rootJob
+    var computeConfig: ComputeConfig = ComputeConfig.EMPTY; private set
+
+    private fun requireNotStarted() = require(!isStarted) { "Already started" }
+    private fun requireStarted() = require(isStarted) { "Not started" }
 
     suspend fun start(): GLCompute {
-        require(!isStarted) { "Already started" }
-
+        requireNotStarted()
+        isStarted = true
         withContext(coroutineContext) {
             val eglDisplay = egl10.eglGetDisplay(EGL10.EGL_DEFAULT_DISPLAY).also {
                 this@GLCompute.eglDisplay = it
@@ -71,12 +86,32 @@ class GLCompute(private val dispatcher: CoroutineDispatcher = defaultDispatcher)
 
             egl10.eglMakeCurrent(eglDisplay, EGL10.EGL_NO_SURFACE, EGL10.EGL_NO_SURFACE, eglContext).requireTrue("eglMakeCurrent")
             requireNoGlError()
+
+            loadConfigs()
         }
         return this
     }
 
+    private fun loadConfigs() {
+        val workGroupSize = IntArray(3)
+            .also { arr -> arr.indices.forEach { glGetIntegeri_v(GL_MAX_COMPUTE_WORK_GROUP_SIZE, it, arr, it) } }
+        val workGroupCount = IntArray(3)
+            .also { arr -> arr.indices.forEach { glGetIntegeri_v(GL_MAX_COMPUTE_WORK_GROUP_COUNT, it, arr, it) } }
+        val out = IntArray(10)
+
+        glGetIntegerv(GL_MAX_COMPUTE_WORK_GROUP_INVOCATIONS, out, 0)
+        glGetIntegerv(GL_MAX_ATOMIC_COUNTER_BUFFER_SIZE, out, 1)
+        glGetIntegerv(GL_MAX_COMPUTE_ATOMIC_COUNTERS, out, 2)
+        glGetIntegerv(GL_MAX_COMPUTE_ATOMIC_COUNTER_BUFFERS, out, 3)
+
+        computeConfig = ComputeConfig(
+            workGroupSize.toVec3(), workGroupCount.toVec3(), out[0],
+            AtomicCounters(maxBufferSize = out[1], maxComputeCounters = out[2], maxComputeCounterBuffers = out[3])
+        )
+    }
+
     fun stop() {
-        require(isStarted) { "Not started" }
+        requireStarted()
         egl10.eglDestroyContext(eglDisplay, eglContext)
 
         eglDisplay = null
@@ -107,7 +142,7 @@ class GLCompute(private val dispatcher: CoroutineDispatcher = defaultDispatcher)
             val msg = GLES31.glGetProgramInfoLog(shaderRef)
             throw IllegalStateException("Unable to link compute shader, msg:'$msg'")
         }
-        LoadResult(programRef, shaderRef, this@GLCompute)
+        LoadResult(programRef, shaderRef, this@GLCompute, computeConfig)
     }
 
     companion object {
@@ -151,5 +186,6 @@ fun checkGlError(throwException: Boolean = false): Int {
 data class LoadResult(
     val programRef: Int,
     val shaderRef: Int,
-    val computeScope: CoroutineScope
+    val computeScope: CoroutineScope,
+    val computeConfig: ComputeConfig
 )
