@@ -27,7 +27,7 @@ interface GLProgram<I, O> {
 }
 
 abstract class BaseGLProgram<I, O> : GLProgram<I, O> {
-    private var ref: LoadResult? = null
+    private var ref: ProgramContext? = null
 
     val programRef: Int get() = requireRef().programRef
     val computeScope: CoroutineScope get() = requireRef().computeScope
@@ -40,6 +40,11 @@ abstract class BaseGLProgram<I, O> : GLProgram<I, O> {
     suspend fun load(glCompute: GLCompute) {
         require(ref == null) { "Already loaded" }
         ref = glCompute.loadProgram(this)
+    }
+
+    suspend fun unload(glCompute: GLCompute) {
+        ref?.let { glCompute.unloadProgram(it) }
+        ref = null
     }
 
     final override suspend fun execute(args: I): O = withContext(computeScope.coroutineContext) {

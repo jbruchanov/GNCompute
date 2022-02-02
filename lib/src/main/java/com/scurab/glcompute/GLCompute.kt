@@ -6,7 +6,10 @@ import android.opengl.GLES10.glGetIntegerv
 import android.opengl.GLES20
 import android.opengl.GLES20.GL_NONE
 import android.opengl.GLES20.glAttachShader
+import android.opengl.GLES20.glDeleteProgram
+import android.opengl.GLES20.glDeleteShader
 import android.opengl.GLES20.glLinkProgram
+import android.opengl.GLES20.glUseProgram
 import android.opengl.GLES30
 import android.opengl.GLES30.glGetIntegeri_v
 import android.opengl.GLES31
@@ -17,6 +20,9 @@ import android.opengl.GLES31.GL_MAX_COMPUTE_ATOMIC_COUNTER_BUFFERS
 import android.opengl.GLES31.GL_MAX_COMPUTE_WORK_GROUP_COUNT
 import android.opengl.GLES31.GL_MAX_COMPUTE_WORK_GROUP_INVOCATIONS
 import android.opengl.GLES31.GL_MAX_COMPUTE_WORK_GROUP_SIZE
+import com.scurab.glcompute.ext.requireNoGlError
+import com.scurab.glcompute.ext.requirePositive
+import com.scurab.glcompute.ext.requireTrue
 import com.scurab.glcompute.ext.toVec3
 import com.scurab.glcompute.model.AtomicCounters
 import com.scurab.glcompute.model.ComputeConfig
@@ -31,6 +37,9 @@ import javax.microedition.khronos.egl.EGLContext
 import javax.microedition.khronos.egl.EGLDisplay
 import kotlin.coroutines.CoroutineContext
 
+/**
+ * @param dispatcher - specific dispatcher to run the GLES on. Be sure it's SINGLE thread dispatcher!
+ */
 class GLCompute(private val dispatcher: CoroutineDispatcher = defaultDispatcher) : CoroutineScope {
 
     private var egl10: EGL10 = (EGLContext.getEGL() as EGL10)
@@ -118,9 +127,9 @@ class GLCompute(private val dispatcher: CoroutineDispatcher = defaultDispatcher)
         eglContext = null
     }
 
-    internal suspend fun loadProgram(program: GLProgram<*, *>): LoadResult = withContext(coroutineContext) {
-        val programRef = GLES31.glCreateProgram().requireNotZero()
-        val shaderRef = GLES31.glCreateShader(GL_COMPUTE_SHADER).requireNotZero()
+    internal suspend fun loadProgram(program: GLProgram<*, *>): ProgramContext = withContext(coroutineContext) {
+        val programRef = GLES31.glCreateProgram().requirePositive()
+        val shaderRef = GLES31.glCreateShader(GL_COMPUTE_SHADER).requirePositive()
 
         GLES31.glShaderSource(shaderRef, program.shaderSourceCode)
         GLES31.glCompileShader(shaderRef)
@@ -142,7 +151,16 @@ class GLCompute(private val dispatcher: CoroutineDispatcher = defaultDispatcher)
             val msg = GLES31.glGetProgramInfoLog(shaderRef)
             throw IllegalStateException("Unable to link compute shader, msg:'$msg'")
         }
-        LoadResult(programRef, shaderRef, this@GLCompute, computeConfig)
+        ProgramContext(programRef, shaderRef, this@GLCompute, computeConfig)
+    }
+
+    suspend fun unloadProgram(programContext: ProgramContext) = withContext(coroutineContext) {
+        glUseProgram(programContext.programRef)
+        requireNoGlError()
+        glDeleteShader(programContext.shaderRef)
+        requireNoGlError()
+        glDeleteProgram(programContext.programRef)
+        requireNoGlError()
     }
 
     companion object {
@@ -151,39 +169,14 @@ class GLCompute(private val dispatcher: CoroutineDispatcher = defaultDispatcher)
 
         private val defaultDispatcher: CoroutineDispatcher = newFixedThreadPoolContext(1, "Default-GLCompute")
 
-        fun isSupported(context: Context) {
+        fun isSupported(context: Context): Boolean {
             val configurationInfo = (context.getSystemService(Context.ACTIVITY_SERVICE) as ActivityManager).deviceConfigurationInfo
-            require(configurationInfo.reqGlEsVersion >= 0x30001) { "Unsupported OGL version:${configurationInfo.reqGlEsVersion}, must be at least 3.1" }
+            return configurationInfo.reqGlEsVersion >= 0x30001
         }
     }
 }
 
-fun Int.requireNotZero(msg: String? = null): Int {
-    require(this != 0) { msg ?: "Value:$this" }
-    return this
-}
-
-fun Boolean.requireTrue(msg: String? = null): Boolean {
-    require(this) { msg ?: "Value:$this" }
-    return this
-}
-
-fun <T> T?.requireNotNull(msg: String? = null): T = requireNotNull(this) { msg ?: "Value is null" }
-
-fun requireNoGlError() = checkGlError(true)
-
-fun checkGlError(throwException: Boolean = false): Int {
-    val err = GLES31.glGetError()
-    if (err != 0) {
-        println("Error:$err")
-        if (throwException) {
-            throw IllegalStateException("oGL error:$err")
-        }
-    }
-    return err
-}
-
-data class LoadResult(
+data class ProgramContext(
     val programRef: Int,
     val shaderRef: Int,
     val computeScope: CoroutineScope,

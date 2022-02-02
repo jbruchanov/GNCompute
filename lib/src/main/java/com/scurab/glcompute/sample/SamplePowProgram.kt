@@ -6,10 +6,10 @@ import com.scurab.glcompute.BaseGLProgram
 import com.scurab.glcompute.GLProgram.Companion.loadShader
 import com.scurab.glcompute.ext.copyToFloatArray
 import com.scurab.glcompute.model.ComputeConfig
-import com.scurab.glcompute.requireNoGlError
-import com.scurab.glcompute.requireNotNull
-import com.scurab.glcompute.requireNotZero
-import com.scurab.glcompute.requireTrue
+import com.scurab.glcompute.ext.requireNoGlError
+import com.scurab.glcompute.ext.requireNotNull
+import com.scurab.glcompute.ext.requirePositive
+import com.scurab.glcompute.ext.requireTrue
 import com.scurab.glcompute.util.measure
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
@@ -67,7 +67,7 @@ class SamplePowProgram(private val sampleDataSize: Int = 4096) : BaseGLProgram<F
 
         //allocate data out
         val (expLocation) = measure(measures) {
-            val expLocation = GLES31.glGetUniformLocation(programRef, "exponent").requireNotZero("Missing 'exponent' uniform in kernel")
+            val expLocation = GLES31.glGetUniformLocation(programRef, "exponent").requirePositive("Missing 'exponent' uniform in kernel")
             GLES31.glUniform1f(expLocation, args)
             requireNoGlError()
             expLocation
