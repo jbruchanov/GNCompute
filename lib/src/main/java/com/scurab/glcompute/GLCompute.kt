@@ -47,7 +47,7 @@ class GLCompute(private val dispatcher: CoroutineDispatcher = defaultDispatcher)
     private var eglDisplay: EGLDisplay? = null
     private var isStarted = false
 
-    private val rootJob = Job()
+    private var rootJob = Job()
     override val coroutineContext: CoroutineContext get() = dispatcher + rootJob
     var computeConfig: ComputeConfig = ComputeConfig.EMPTY; private set
 
@@ -56,6 +56,7 @@ class GLCompute(private val dispatcher: CoroutineDispatcher = defaultDispatcher)
 
     suspend fun start(): GLCompute {
         requireNotStarted()
+        rootJob = Job()
         isStarted = true
         withContext(coroutineContext) {
             val eglDisplay = egl10.eglGetDisplay(EGL10.EGL_DEFAULT_DISPLAY).also {
@@ -161,6 +162,7 @@ class GLCompute(private val dispatcher: CoroutineDispatcher = defaultDispatcher)
         requireNoGlError()
         glDeleteProgram(programContext.programRef)
         requireNoGlError()
+        rootJob.cancel()
     }
 
     companion object {

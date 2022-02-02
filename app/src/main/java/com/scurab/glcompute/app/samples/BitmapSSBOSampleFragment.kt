@@ -1,4 +1,4 @@
-package com.scurab.glcompute.app
+package com.scurab.glcompute.app.samples
 
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
@@ -9,7 +9,9 @@ import android.widget.AdapterView
 import android.widget.ArrayAdapter
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
+import com.scurab.glcompute.app.R
 import com.scurab.glcompute.app.databinding.FragmentBitmapSsboBinding
+import com.scurab.glcompute.app.glCompute
 import com.scurab.glcompute.app.tools.viewLifecycleLazy
 import com.scurab.glcompute.sample.SampleBitmapProgram
 import kotlinx.coroutines.Dispatchers

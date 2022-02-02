@@ -5,11 +5,11 @@ import android.util.Log
 import com.scurab.glcompute.BaseGLProgram
 import com.scurab.glcompute.GLProgram.Companion.loadShader
 import com.scurab.glcompute.ext.copyToFloatArray
-import com.scurab.glcompute.model.ComputeConfig
 import com.scurab.glcompute.ext.requireNoGlError
 import com.scurab.glcompute.ext.requireNotNull
 import com.scurab.glcompute.ext.requirePositive
 import com.scurab.glcompute.ext.requireTrue
+import com.scurab.glcompute.model.ComputeConfig
 import com.scurab.glcompute.util.measure
 import java.nio.ByteBuffer
 import java.nio.ByteOrder

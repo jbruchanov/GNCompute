@@ -6,6 +6,7 @@ import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.Fragment
 import com.scurab.glcompute.GLCompute
 import com.scurab.glcompute.app.databinding.FragmentMainBinding
+import com.scurab.glcompute.app.samples.BitmapSSBOSampleFragment
 import com.scurab.glcompute.app.tools.replaceFragment
 import com.scurab.glcompute.app.tools.viewLifecycleLazy
 
