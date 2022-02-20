@@ -76,7 +76,7 @@ void nmul(float *data, int len, float multiplier) {
 
 extern "C"
 JNIEXPORT jboolean JNICALL
-Java_com_scurab_glcompute_app_util_BitmapBrightnessChange__1isNeonSupported(JNIEnv *env, jobject thiz) {
+Java_com_scurab_gncompute_app_util_BitmapBrightnessChange__1isNeonSupported(JNIEnv *env, jobject thiz) {
 #ifdef __aarch64__
     return true;
 #else
@@ -86,7 +86,7 @@ Java_com_scurab_glcompute_app_util_BitmapBrightnessChange__1isNeonSupported(JNIE
 
 extern "C"
 JNIEXPORT jlong JNICALL
-Java_com_scurab_glcompute_app_util_BitmapBrightnessChange__1changeBrightnessCIntArray(JNIEnv *env, jobject thiz, jintArray bitmap, jint diff) {
+Java_com_scurab_gncompute_app_util_BitmapBrightnessChange__1changeBrightnessCIntArray(JNIEnv *env, jobject thiz, jintArray bitmap, jint diff) {
     jlong start = timeMicro();
     int *data = env->GetIntArrayElements(bitmap, nullptr);
     int size = env->GetArrayLength(bitmap);
@@ -98,7 +98,7 @@ Java_com_scurab_glcompute_app_util_BitmapBrightnessChange__1changeBrightnessCInt
 
 extern "C"
 JNIEXPORT jlong  JNICALL
-Java_com_scurab_glcompute_app_util_BitmapBrightnessChange__1changeBrightnessCBuffer(JNIEnv *env, jobject thiz, jobject bitmap, jint diff) {
+Java_com_scurab_gncompute_app_util_BitmapBrightnessChange__1changeBrightnessCBuffer(JNIEnv *env, jobject thiz, jobject bitmap, jint diff) {
     jlong start = timeMicro();
     int *data = (int *) env->GetDirectBufferAddress(bitmap);
     //byte buffer full of ints
@@ -110,7 +110,7 @@ Java_com_scurab_glcompute_app_util_BitmapBrightnessChange__1changeBrightnessCBuf
 
 extern "C"
 JNIEXPORT jlong JNICALL
-Java_com_scurab_glcompute_app_util_BitmapBrightnessChange__1changeBrightnessNeon(JNIEnv *env, jobject thiz, jintArray bitmap, jint diff) {
+Java_com_scurab_gncompute_app_util_BitmapBrightnessChange__1changeBrightnessNeon(JNIEnv *env, jobject thiz, jintArray bitmap, jint diff) {
     jlong start = timeMicro();
     int *data = env->GetIntArrayElements(bitmap, nullptr);
     int size = env->GetArrayLength(bitmap);
@@ -122,7 +122,7 @@ Java_com_scurab_glcompute_app_util_BitmapBrightnessChange__1changeBrightnessNeon
 
 extern "C"
 JNIEXPORT jlong JNICALL
-Java_com_scurab_glcompute_app_util_BitmapBrightnessChange__1changeBrightnessNeonBuffer(JNIEnv *env, jobject thiz, jobject bitmap, jint diff) {
+Java_com_scurab_gncompute_app_util_BitmapBrightnessChange__1changeBrightnessNeonBuffer(JNIEnv *env, jobject thiz, jobject bitmap, jint diff) {
     jlong start = timeMicro();
     int *data = (int *) env->GetDirectBufferAddress(bitmap);
     //byte buffer full of ints
@@ -134,7 +134,7 @@ Java_com_scurab_glcompute_app_util_BitmapBrightnessChange__1changeBrightnessNeon
 
 extern "C"
 JNIEXPORT jlong JNICALL
-Java_com_scurab_glcompute_app_util_NeonCalc__1mulArray(JNIEnv *env, jobject thiz, jfloatArray array, jfloat multiplier) {
+Java_com_scurab_gncompute_app_util_NeonCalc__1mulArray(JNIEnv *env, jobject thiz, jfloatArray array, jfloat multiplier) {
     jlong start = timeMicro();
     float *data = env->GetFloatArrayElements(array, nullptr);
     int len = env->GetArrayLength(array);
@@ -146,7 +146,7 @@ Java_com_scurab_glcompute_app_util_NeonCalc__1mulArray(JNIEnv *env, jobject thiz
 
 extern "C"
 JNIEXPORT jlong JNICALL
-Java_com_scurab_glcompute_app_util_NeonCalc__1mulBuffer(JNIEnv *env, jobject thiz, jobject buffer, jfloat multiplier) {
+Java_com_scurab_gncompute_app_util_NeonCalc__1mulBuffer(JNIEnv *env, jobject thiz, jobject buffer, jfloat multiplier) {
     jlong start = timeMicro();
     float *data = (float *) env->GetDirectBufferAddress(buffer);
     //byte buffer full of floats

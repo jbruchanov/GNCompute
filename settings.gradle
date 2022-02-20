@@ -12,6 +12,6 @@ dependencyResolutionManagement {
         mavenCentral()
     }
 }
-rootProject.name = "GLCompute"
+rootProject.name = "gncompute"
 include ':app'
 include ':lib'

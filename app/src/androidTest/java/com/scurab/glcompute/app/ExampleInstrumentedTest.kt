@@ -1,4 +1,4 @@
-package com.scurab.glcompute.app
+package com.scurab.gncompute.app
 
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
@@ -17,6 +17,6 @@ class ExampleInstrumentedTest {
     fun useAppContext() {
         // Context of the app under test.
         val appContext = InstrumentationRegistry.getInstrumentation().targetContext
-        assertEquals("com.scurab.glcompute", appContext.packageName)
+        assertEquals("com.scurab.gncompute", appContext.packageName)
     }
 }

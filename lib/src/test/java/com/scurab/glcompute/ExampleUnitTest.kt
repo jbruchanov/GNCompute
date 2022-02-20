@@ -1,4 +1,4 @@
-package com.scurab.glcompute
+package com.scurab.gncompute
 
 import org.junit.Assert.assertEquals
 import org.junit.Test

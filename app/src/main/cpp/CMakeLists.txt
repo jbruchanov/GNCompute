@@ -7,7 +7,7 @@ cmake_minimum_required(VERSION 3.18.1)
 
 # Declares and names the project.
 
-project("glcompute")
+project("gncompute")
 
 #set_target_properties(${TARGET} PROPERTIES COMPILE_FLAGS -mfpu=neon)
 
@@ -17,7 +17,7 @@ project("glcompute")
 # Gradle automatically packages shared libraries with your APK.
 
 add_library( # Sets the name of the library.
-        glcompute
+        gncompute
 
         # Sets the library as a shared library.
         SHARED
@@ -43,7 +43,7 @@ find_library( # Sets the name of the path variable.
 # build script, prebuilt third-party libraries, or system libraries.
 
 target_link_libraries( # Specifies the target library.
-        glcompute
+        gncompute
 
         # Links the target library to the log library
         # included in the NDK.
