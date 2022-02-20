@@ -162,7 +162,6 @@ class GLCompute(private val dispatcher: CoroutineDispatcher = defaultDispatcher)
         requireNoGlError()
         glDeleteProgram(programContext.programRef)
         requireNoGlError()
-        rootJob.cancel()
     }
 
     companion object {
