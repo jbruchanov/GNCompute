@@ -4,10 +4,11 @@
 #include <android/log.h>
 
 #ifdef __aarch64__
+
 #include "arm_neon.h"
+
 #else
 #endif
-
 
 
 #define MAX(x, y) (((x) > (y)) ? (x) : (y))
@@ -57,14 +58,30 @@ void nchangeBrightness(int *data, int len, int diff) {
 #endif
 }
 
+void nmul(float *data, int len, float multiplier) {
+    if (len == 0)return;
+#ifdef __aarch64__
+    //ARGB => BGRA (due to LE and casting Int -> char)
+    float32x4_t vec1;
+    float32x4_t bvec = {multiplier, multiplier, multiplier, multiplier};
+    for (int i = 0; i < len; i += 4) {
+        vec1 = vld1q_f32(data + i);
+        vec1 = vmulq_f32(vec1, bvec);
+        vst1q_f32(data + i, vec1);
+    }
+#else
+    throw "NO NEON";
+#endif
+}
+
 extern "C"
 JNIEXPORT jboolean JNICALL
 Java_com_scurab_glcompute_app_util_BitmapBrightnessChange__1isNeonSupported(JNIEnv *env, jobject thiz) {
-    #ifdef __aarch64__
+#ifdef __aarch64__
     return true;
-    #else
+#else
     return false;
-    #endif
+#endif
 }
 
 extern "C"
@@ -85,7 +102,7 @@ Java_com_scurab_glcompute_app_util_BitmapBrightnessChange__1changeBrightnessCBuf
     jlong start = timeMicro();
     int *data = (int *) env->GetDirectBufferAddress(bitmap);
     //byte buffer full of ints
-    int size = (int)(env->GetDirectBufferCapacity(bitmap) / 4);
+    int size = (int) (env->GetDirectBufferCapacity(bitmap) / 4);
     changeBrightness(data, size, diff);
     jlong end = timeMicro();
     return end - start;
@@ -109,8 +126,32 @@ Java_com_scurab_glcompute_app_util_BitmapBrightnessChange__1changeBrightnessNeon
     jlong start = timeMicro();
     int *data = (int *) env->GetDirectBufferAddress(bitmap);
     //byte buffer full of ints
-    int size = (int)(env->GetDirectBufferCapacity(bitmap) / 4);
+    int size = (int) (env->GetDirectBufferCapacity(bitmap) / 4);
     nchangeBrightness(data, size, diff);
+    jlong end = timeMicro();
+    return end - start;
+}
+
+extern "C"
+JNIEXPORT jlong JNICALL
+Java_com_scurab_glcompute_app_util_NeonCalc__1mulArray(JNIEnv *env, jobject thiz, jfloatArray array, jfloat multiplier) {
+    jlong start = timeMicro();
+    float *data = env->GetFloatArrayElements(array, nullptr);
+    int len = env->GetArrayLength(array);
+    nmul(data, len, multiplier);
+    jlong end = timeMicro();
+    env->ReleaseFloatArrayElements(array, data, 0);
+    return end - start;
+}
+
+extern "C"
+JNIEXPORT jlong JNICALL
+Java_com_scurab_glcompute_app_util_NeonCalc__1mulBuffer(JNIEnv *env, jobject thiz, jobject buffer, jfloat multiplier) {
+    jlong start = timeMicro();
+    float *data = (float *) env->GetDirectBufferAddress(buffer);
+    //byte buffer full of floats
+    int len = (int) (env->GetDirectBufferCapacity(buffer) / 4);
+    nmul(data, len, multiplier);
     jlong end = timeMicro();
     return end - start;
 }

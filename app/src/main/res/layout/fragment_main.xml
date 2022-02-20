@@ -19,9 +19,9 @@
         android:text="Bitmap - Compare techs" />
 
     <Button
-        android:id="@+id/scalarComputeShader"
+        android:id="@+id/scalarMul"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Scalar - Compute Shader" />
+        android:text="Vector / Scalar multiplication" />
 
 </LinearLayout>

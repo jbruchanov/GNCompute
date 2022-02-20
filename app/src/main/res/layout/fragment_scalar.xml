@@ -8,7 +8,7 @@
     tools:context=".MainActivity">
 
     <androidx.appcompat.widget.AppCompatSpinner
-        android:id="@+id/imagePicker"
+        android:id="@+id/method"
         android:layout_width="match_parent"
         android:layout_height="wrap_content" />
 
