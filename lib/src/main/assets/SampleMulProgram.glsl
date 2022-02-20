@@ -8,9 +8,9 @@ layout(local_size_x = GROUP_SIZE) in;
 layout(binding = 0) buffer Input {
     readonly writeonly float items[];
 } data;
-layout(location = 1) uniform float exponent;
+layout(location = 1) uniform float multiplier;
 
 
 void main() {
-    data.items[ID] = pow(data.items[ID], exponent);
+    data.items[ID] = data.items[ID] * multiplier;
 }

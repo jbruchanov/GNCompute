@@ -54,5 +54,5 @@ abstract class BaseGLProgram<I, O> : GLProgram<I, O> {
         r
     }
 
-    abstract suspend fun onExecute(args: I): O
+    protected abstract suspend fun onExecute(args: I): O
 }

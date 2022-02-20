@@ -14,13 +14,13 @@ import com.scurab.glcompute.util.measure
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
 
-class SamplePowProgram(private val sampleDataSize: Int = 4096) : BaseGLProgram<Float, FloatArray>() {
+class SampleMulProgram(private val sampleDataSize: Int = 4096) : BaseGLProgram<Float, FloatArray>() {
 
     private val TAG = "SIOProgram"
     private val groupSize = 128
     private val memSampleDataSize = sampleDataSize * Float.SIZE_BYTES
 
-    override val shaderSourceCode: String = loadShader("SamplePowProgram.glsl")
+    override val shaderSourceCode: String = loadShader("SampleMulProgram.glsl")
         .replace("#define GROUP_SIZE -1", "#define GROUP_SIZE $groupSize")
 
     private val input = ByteBuffer
@@ -67,7 +67,7 @@ class SamplePowProgram(private val sampleDataSize: Int = 4096) : BaseGLProgram<F
 
         //allocate data out
         val (expLocation) = measure(measures) {
-            val expLocation = GLES31.glGetUniformLocation(programRef, "exponent").requirePositive("Missing 'exponent' uniform in kernel")
+            val expLocation = GLES31.glGetUniformLocation(programRef, "multiplier").requirePositive("Missing 'multiplier' uniform in kernel")
             GLES31.glUniform1f(expLocation, args)
             requireNoGlError()
             expLocation
