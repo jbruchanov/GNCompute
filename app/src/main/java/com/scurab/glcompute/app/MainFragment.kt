@@ -7,6 +7,7 @@ import androidx.fragment.app.Fragment
 import com.scurab.glcompute.GLCompute
 import com.scurab.glcompute.app.databinding.FragmentMainBinding
 import com.scurab.glcompute.app.samples.BitmapSSBOSampleFragment
+import com.scurab.glcompute.app.samples.ChangeBrightnessFragment
 import com.scurab.glcompute.app.samples.ScalarSampleFragment
 import com.scurab.glcompute.app.tools.replaceFragment
 import com.scurab.glcompute.app.tools.viewLifecycleLazy
@@ -28,6 +29,7 @@ class MainFragment : Fragment(R.layout.fragment_main) {
 
         with(binding) {
             bitmapComputeShader.setOnClickListener { replaceFragment(BitmapSSBOSampleFragment()) }
+            bitmapAll.setOnClickListener { replaceFragment(ChangeBrightnessFragment()) }
             scalarComputeShader.setOnClickListener { replaceFragment(ScalarSampleFragment()) }
         }
     }

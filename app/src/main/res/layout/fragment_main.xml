@@ -13,6 +13,12 @@
         android:text="Bitmap - Compute Shader" />
 
     <Button
+        android:id="@+id/bitmapAll"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Bitmap - Compare techs" />
+
+    <Button
         android:id="@+id/scalarComputeShader"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
